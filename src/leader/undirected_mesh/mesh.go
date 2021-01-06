@@ -97,15 +97,15 @@ func processMesh(v lib.Node, round int, rounds int) bool {
 	//left - Candidates[0] or Forwarders[0]
 	//right - Candidates[1] or Forwarders[0] or Forwarders[1]
 	if s.Status == forwarding {
-		if len(s.Candidates) == 2 {
+		switch len(s.Candidates) {
+		case 2:
 			sendMessageMesh(v, s.Candidates[0], s.PassLeft)
 			sendMessageMesh(v, s.Candidates[1], s.PassRight)
 			msg1 := receiveMessageMesh(v, s.Candidates[0])
 			s.PassRight = msg1
 			msg2 := receiveMessageMesh(v, s.Candidates[1])
 			s.PassLeft = msg2
-		}
-		if len(s.Candidates) == 1 {
+		case 1:
 			if len(s.Forwarders) == 1 {
 				sendMessageMesh(v, s.Candidates[0], s.PassLeft)
 				sendMessageMesh(v, s.Forwarders[0], s.PassRight)
@@ -114,8 +114,7 @@ func processMesh(v lib.Node, round int, rounds int) bool {
 				msg2 := receiveMessageMesh(v, s.Forwarders[0])
 				s.PassLeft = msg2
 			}
-		}
-		if len(s.Candidates) == 0 {
+		case 0:
 			sendMessageMesh(v, s.Forwarders[0], s.PassLeft)
 			sendMessageMesh(v, s.Forwarders[1], s.PassRight)
 			msg1 := receiveMessageMesh(v, s.Forwarders[0])
@@ -153,7 +152,8 @@ func initializeMesh(v lib.Node) bool {
 	var state modeType
 	var PassRight *messageMesh
 	var PassLeft *messageMesh
-	if v.GetOutChannelsCount() == 2 {
+	switch v.GetOutChannelsCount() {
+	case 2:
 		state = candidate
 		for i := 0; i < v.GetOutChannelsCount(); i++ {
 			msg := messageMesh{v.GetIndex(), candidate}
@@ -161,8 +161,7 @@ func initializeMesh(v lib.Node) bool {
 		}
 		PassRight = &messageMesh{v.GetIndex(), candidate}
 		PassLeft = &messageMesh{v.GetIndex(), candidate}
-	}
-	if v.GetOutChannelsCount() == 3 {
+	case 3:
 		state = forwarding
 		for i := 0; i < v.GetOutChannelsCount(); i++ {
 			msg := messageMesh{v.GetIndex(), forwarding}
@@ -170,8 +169,7 @@ func initializeMesh(v lib.Node) bool {
 		}
 		PassRight = nil
 		PassLeft = nil
-	}
-	if v.GetOutChannelsCount() == 4 {
+	case 4:
 		state = passive
 		for i := 0; i < v.GetOutChannelsCount(); i++ {
 			msg := messageMesh{v.GetIndex(), passive}
@@ -197,13 +195,12 @@ func buildNeighboursMesh(v lib.Node) ([]modeType, []int, []int, []int) {
 	for i := 0; i < v.GetInChannelsCount(); i++ {
 		msg := receiveMessageMesh(v, i)
 		Neighbours = append(Neighbours, msg.Mode)
-		if msg.Mode == candidate {
+		switch msg.Mode {
+		case candidate:
 			Candidates = append(Candidates, i)
-		}
-		if msg.Mode == forwarding {
+		case forwarding:
 			Forwarders = append(Forwarders, i)
-		}
-		if msg.Mode == passive {
+		case passive:
 			Passives = append(Passives, i)
 		}
 	}

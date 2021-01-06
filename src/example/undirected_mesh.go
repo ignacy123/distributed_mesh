@@ -15,28 +15,8 @@ func main() {
 		log.Println("too small")
 		return
 	}
-	log.Println("buliding", a, "x", b, "mesh")
-	adjacencyList := make([][]int, a*b)
-	for i := range adjacencyList {
-		adjacencyList[i] = make([]int, 0)
-	}
-	for i := 1; i <= a; i++ {
-		for j := 1; j <= b; j++ {
-			if i-1 > 0 {
-				adjacencyList[(i-1)*b+j-1] = append(adjacencyList[(i-1)*b+j-1], (i-2)*b+j)
-			}
-			if j-1 > 0 {
-				adjacencyList[(i-1)*b+j-1] = append(adjacencyList[(i-1)*b+j-1], (i-1)*b+j-1)
-			}
-			if i+1 <= a {
-				adjacencyList[(i-1)*b+j-1] = append(adjacencyList[(i-1)*b+j-1], (i)*b+j)
-			}
-			if j+1 <= b {
-				adjacencyList[(i-1)*b+j-1] = append(adjacencyList[(i-1)*b+j-1], (i-1)*b+j+1)
-			}
-		}
-	}
-	g, n := lib.BuildSynchronizedGraphFromAdjacencyListWithRandomIndexes(adjacencyList)
+
+	g, n := lib.BuildSynchronizedUndirectedMesh(a, b)
 	undirected_mesh.RunMeshLeader(g, n, (a+b-2)*2)
 
 }

@@ -143,8 +143,8 @@ func BuildSynchronizedRandomTree(n int) ([]Node, Synchronizer) {
 	return vertices, synchronizer
 }
 
-func BuildSynchronizedGraphFromAdjacencyList(adjacencyList [][]int) ([]Node, Synchronizer) {
-	vertices, synchronizer := BuildSynchronizedEmptyGraph(len(adjacencyList), GetGenerator())
+func BuildSynchronizedGraphFromAdjacencyList(adjacencyList [][]int, generator Generator) ([]Node, Synchronizer) {
+	vertices, synchronizer := BuildSynchronizedEmptyGraph(len(adjacencyList), generator)
 	for i, l := range adjacencyList {
 		for _, j := range l {
 			if i < j-1 {
@@ -162,22 +162,28 @@ func BuildSynchronizedGraphFromAdjacencyList(adjacencyList [][]int) ([]Node, Syn
 	}
 	return vertices, synchronizer
 }
-func BuildSynchronizedGraphFromAdjacencyListWithRandomIndexes(adjacencyList [][]int) ([]Node, Synchronizer) {
-	vertices, synchronizer := BuildSynchronizedEmptyGraph(len(adjacencyList), GetRandomGenerator())
-	for i, l := range adjacencyList {
-		for _, j := range l {
-			if i < j-1 {
-				chans := getTwoWayChannels(2)
-				addTwoWayConnection(
-					vertices[i].(*twoWayNode), vertices[j-1].(*twoWayNode),
-					chans[0], chans[1])
-				log.Println("Channel", vertices[i].GetIndex(), "->", vertices[j-1].GetIndex(), "set up")
-				log.Println("Channel", vertices[j-1].GetIndex(), "->", vertices[i].GetIndex(), "set up")
+
+func BuildSynchronizedUndirectedMesh(a int, b int) ([]Node, Synchronizer) {
+	log.Println("buliding", a, "x", b, "mesh")
+	adjacencyList := make([][]int, a*b)
+	for i := range adjacencyList {
+		adjacencyList[i] = make([]int, 0)
+	}
+	for i := 1; i <= a; i++ {
+		for j := 1; j <= b; j++ {
+			if i-1 > 0 {
+				adjacencyList[(i-1)*b+j-1] = append(adjacencyList[(i-1)*b+j-1], (i-2)*b+j)
+			}
+			if j-1 > 0 {
+				adjacencyList[(i-1)*b+j-1] = append(adjacencyList[(i-1)*b+j-1], (i-1)*b+j-1)
+			}
+			if i+1 <= a {
+				adjacencyList[(i-1)*b+j-1] = append(adjacencyList[(i-1)*b+j-1], (i)*b+j)
+			}
+			if j+1 <= b {
+				adjacencyList[(i-1)*b+j-1] = append(adjacencyList[(i-1)*b+j-1], (i-1)*b+j+1)
 			}
 		}
 	}
-	for _, vertex := range vertices {
-		vertex.(*twoWayNode).shuffleTopology()
-	}
-	return vertices, synchronizer
+	return BuildSynchronizedGraphFromAdjacencyList(adjacencyList, GetRandomGenerator())
 }
