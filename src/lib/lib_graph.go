@@ -162,3 +162,22 @@ func BuildSynchronizedGraphFromAdjacencyList(adjacencyList [][]int) ([]Node, Syn
 	}
 	return vertices, synchronizer
 }
+func BuildSynchronizedGraphFromAdjacencyListWithRandomIndexes(adjacencyList [][]int) ([]Node, Synchronizer) {
+	vertices, synchronizer := BuildSynchronizedEmptyGraph(len(adjacencyList), GetRandomGenerator())
+	for i, l := range adjacencyList {
+		for _, j := range l {
+			if i < j-1 {
+				chans := getTwoWayChannels(2)
+				addTwoWayConnection(
+					vertices[i].(*twoWayNode), vertices[j-1].(*twoWayNode),
+					chans[0], chans[1])
+				log.Println("Channel", vertices[i].GetIndex(), "->", vertices[j-1].GetIndex(), "set up")
+				log.Println("Channel", vertices[j-1].GetIndex(), "->", vertices[i].GetIndex(), "set up")
+			}
+		}
+	}
+	for _, vertex := range vertices {
+		vertex.(*twoWayNode).shuffleTopology()
+	}
+	return vertices, synchronizer
+}
